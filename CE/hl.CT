@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CheatTable CheatEngineTableVersion="46">
+  <CheatEntries>
+    <CheatEntry>
+      <ID>1713</ID>
+      <Description>"Pos(Y)"</Description>
+      <VariableType>Float</VariableType>
+      <Address>1758F270</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>0</ID>
+      <Description>"Ammo count"</Description>
+      <VariableType>2 Bytes</VariableType>
+      <Address>hw.dll+1059FC0</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>1714</ID>
+      <Description>"Pos(X)"</Description>
+      <VariableType>Float</VariableType>
+      <Address>1758F444</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>1715</ID>
+      <Description>"Pos(Z)"</Description>
+      <VariableType>Float</VariableType>
+      <Address>hw.dll+E95864</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>1722</ID>
+      <Description>"HP(dv)"</Description>
+      <VariableType>2 Bytes</VariableType>
+      <Address>0D98D640</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>1723</ID>
+      <Description>"No description"</Description>
+      <ShowAsSigned>0</ShowAsSigned>
+      <VariableType>2 Bytes</VariableType>
+      <Address>client.dll+4B38A</Address>
+    </CheatEntry>
+  </CheatEntries>
+  <CheatCodes>
+    <CodeEntry>
+      <Description>Code :mov [client.dll+11D640],eax</Description>
+      <AddressString>client.dll+4B38A</AddressString>
+      <Before>
+        <Byte>0D</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+        <Byte>C8</Byte>
+        <Byte>42</Byte>
+      </Before>
+      <Actual>
+        <Byte>A3</Byte>
+        <Byte>40</Byte>
+        <Byte>D6</Byte>
+        <Byte>98</Byte>
+        <Byte>0D</Byte>
+      </Actual>
+      <After>
+        <Byte>B8</Byte>
+        <Byte>01</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+        <Byte>00</Byte>
+      </After>
+    </CodeEntry>
+  </CheatCodes>
+  <UserdefinedSymbols/>
+</CheatTable>
