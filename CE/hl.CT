@@ -2,41 +2,63 @@
 <CheatTable CheatEngineTableVersion="46">
   <CheatEntries>
     <CheatEntry>
-      <ID>1713</ID>
-      <Description>"Pos(Y)"</Description>
+      <ID>198</ID>
+      <Description>"HP value"</Description>
+      <Color>0000FF</Color>
       <VariableType>Float</VariableType>
-      <Address>1758F270</Address>
+      <Address>131DAC5C</Address>
+      <CheatEntries>
+        <CheatEntry>
+          <ID>199</ID>
+          <Description>"0x131DAC5C-0x160"</Description>
+          <ShowAsHex>1</ShowAsHex>
+          <VariableType>4 Bytes</VariableType>
+          <Address>0FE61CDC</Address>
+          <CheatEntries>
+            <CheatEntry>
+              <ID>200</ID>
+              <Description>"0x0FE61CDC-0x4"</Description>
+              <ShowAsHex>1</ShowAsHex>
+              <VariableType>4 Bytes</VariableType>
+              <Address>131DAAF8</Address>
+              <CheatEntries>
+                <CheatEntry>
+                  <ID>201</ID>
+                  <Description>"0x131DAAF8-0x7C"</Description>
+                  <ShowAsHex>1</ShowAsHex>
+                  <Color>40FF00</Color>
+                  <VariableType>4 Bytes</VariableType>
+                  <Address>hw.dll+6E92AC</Address>
+                  <CheatEntries>
+                    <CheatEntry>
+                      <ID>203</ID>
+                      <Description>"BaseAddress"</Description>
+                      <ShowAsHex>1</ShowAsHex>
+                      <ShowAsSigned>0</ShowAsSigned>
+                      <Color>40FF00</Color>
+                      <VariableType>4 Bytes</VariableType>
+                      <Address>hw.dll+6E92AC</Address>
+                    </CheatEntry>
+                  </CheatEntries>
+                </CheatEntry>
+              </CheatEntries>
+            </CheatEntry>
+          </CheatEntries>
+        </CheatEntry>
+      </CheatEntries>
     </CheatEntry>
     <CheatEntry>
-      <ID>0</ID>
-      <Description>"Ammo count"</Description>
-      <VariableType>2 Bytes</VariableType>
-      <Address>hw.dll+1059FC0</Address>
-    </CheatEntry>
-    <CheatEntry>
-      <ID>1714</ID>
-      <Description>"Pos(X)"</Description>
-      <VariableType>Float</VariableType>
-      <Address>1758F444</Address>
-    </CheatEntry>
-    <CheatEntry>
-      <ID>1715</ID>
-      <Description>"Pos(Z)"</Description>
-      <VariableType>Float</VariableType>
-      <Address>hw.dll+E95864</Address>
-    </CheatEntry>
-    <CheatEntry>
-      <ID>1722</ID>
-      <Description>"HP(dv)"</Description>
-      <VariableType>2 Bytes</VariableType>
-      <Address>0D98D640</Address>
-    </CheatEntry>
-    <CheatEntry>
-      <ID>1723</ID>
-      <Description>"No description"</Description>
+      <ID>202</ID>
+      <Description>"*HP"</Description>
       <ShowAsSigned>0</ShowAsSigned>
-      <VariableType>2 Bytes</VariableType>
-      <Address>client.dll+4B38A</Address>
+      <Color>0000FF</Color>
+      <VariableType>Float</VariableType>
+      <Address>(BaseAddress)</Address>
+      <Offsets>
+        <Offset>0x160</Offset>
+        <Offset>0x4</Offset>
+        <Offset>0x7C</Offset>
+      </Offsets>
     </CheatEntry>
   </CheatEntries>
   <CheatCodes>
