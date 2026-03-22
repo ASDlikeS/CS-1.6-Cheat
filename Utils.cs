@@ -11,7 +11,7 @@ internal static class Utils
         Console.CancelKeyPress += (sender, e) =>
         {
             Console.WriteLine("\nExitting...");
-            Initialization.CloseHandle(Initialization._handle);
+            ProcessManager.CloseHandle(ProcessManager.Handle);
             Environment.Exit(0);
         };
     }

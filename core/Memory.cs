@@ -5,20 +5,20 @@ namespace CS16Cheat.core;
 internal static class Memory
 {
     [DllImport("kernel32.dll", SetLastError = true)]
+    private static extern bool VirtualProtectEx(
+        IntPtr hProcess,
+        nint lpAddress,
+        uint flNewProtect,
+        out int lpflOldProtect
+    );
+
+    [DllImport("kernel32.dll", SetLastError = true)]
     internal static extern bool ReadProcessMemory(
         IntPtr hProcess,
         IntPtr lpBaseAddress,
         byte[] lpBuffer,
         int dwSize,
         out int lpNumberOfBytesRead
-    );
-
-    [DllImport("kernel32.dll", SetLastError = true)]
-    private static extern bool VirtualProtectEx(
-        IntPtr hProcess,
-        nint lpAddress,
-        uint flNewProtect,
-        out int lpflOldProtect
     );
 
     [DllImport("kernel32.dll", SetLastError = true)]
@@ -63,7 +63,7 @@ internal static class Memory
 
         var buffer = new byte[size];
 
-        if (!ReadProcessMemory(Initialization._handle, address, buffer, size, out int bytesRead))
+        if (!ReadProcessMemory(ProcessManager.Handle, address, buffer, size, out int bytesRead))
         {
             int errorCode = Marshal.GetLastWin32Error();
             Console.ForegroundColor = ConsoleColor.Red;
