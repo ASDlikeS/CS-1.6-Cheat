@@ -45,7 +45,7 @@ internal static class Memory
         Byte,
     }
 
-    internal static object? ReadWTypeMemory(nint processHandle, nint address, ReadType type)
+    internal static object? ReadWTypeMemory(nint address, ReadType type)
     {
         byte size = type switch
         {
@@ -63,7 +63,7 @@ internal static class Memory
 
         var buffer = new byte[size];
 
-        if (!ReadProcessMemory(processHandle, address, buffer, size, out int bytesRead))
+        if (!ReadProcessMemory(Initialization._handle, address, buffer, size, out int bytesRead))
         {
             int errorCode = Marshal.GetLastWin32Error();
             Console.ForegroundColor = ConsoleColor.Red;

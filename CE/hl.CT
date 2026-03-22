@@ -2,63 +2,50 @@
 <CheatTable CheatEngineTableVersion="46">
   <CheatEntries>
     <CheatEntry>
-      <ID>198</ID>
-      <Description>"HP value"</Description>
-      <Color>0000FF</Color>
-      <VariableType>Float</VariableType>
-      <Address>131DAC5C</Address>
-      <CheatEntries>
-        <CheatEntry>
-          <ID>199</ID>
-          <Description>"0x131DAC5C-0x160"</Description>
-          <ShowAsHex>1</ShowAsHex>
-          <VariableType>4 Bytes</VariableType>
-          <Address>0FE61CDC</Address>
-          <CheatEntries>
-            <CheatEntry>
-              <ID>200</ID>
-              <Description>"0x0FE61CDC-0x4"</Description>
-              <ShowAsHex>1</ShowAsHex>
-              <VariableType>4 Bytes</VariableType>
-              <Address>131DAAF8</Address>
-              <CheatEntries>
-                <CheatEntry>
-                  <ID>201</ID>
-                  <Description>"0x131DAAF8-0x7C"</Description>
-                  <ShowAsHex>1</ShowAsHex>
-                  <Color>40FF00</Color>
-                  <VariableType>4 Bytes</VariableType>
-                  <Address>hw.dll+6E92AC</Address>
-                  <CheatEntries>
-                    <CheatEntry>
-                      <ID>203</ID>
-                      <Description>"BaseAddress"</Description>
-                      <ShowAsHex>1</ShowAsHex>
-                      <ShowAsSigned>0</ShowAsSigned>
-                      <Color>40FF00</Color>
-                      <VariableType>4 Bytes</VariableType>
-                      <Address>hw.dll+6E92AC</Address>
-                    </CheatEntry>
-                  </CheatEntries>
-                </CheatEntry>
-              </CheatEntries>
-            </CheatEntry>
-          </CheatEntries>
-        </CheatEntry>
-      </CheatEntries>
-    </CheatEntry>
-    <CheatEntry>
       <ID>202</ID>
       <Description>"*HP"</Description>
       <ShowAsSigned>0</ShowAsSigned>
       <Color>0000FF</Color>
       <VariableType>Float</VariableType>
-      <Address>(BaseAddress)</Address>
+      <Address>hw.dll+6E92AC</Address>
       <Offsets>
         <Offset>0x160</Offset>
         <Offset>0x4</Offset>
         <Offset>0x7C</Offset>
       </Offsets>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>210</ID>
+      <Description>"*CurrentWeaponAmmo"</Description>
+      <ShowAsSigned>0</ShowAsSigned>
+      <Color>FFFF00</Color>
+      <VariableType>4 Bytes</VariableType>
+      <Address>hw.dll+6E92AC</Address>
+      <Offsets>
+        <Offset>CC</Offset>
+        <Offset>5D4</Offset>
+        <Offset>7C</Offset>
+      </Offsets>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>211</ID>
+      <Description>"*Money"</Description>
+      <ShowAsSigned>0</ShowAsSigned>
+      <Color>00FFFF</Color>
+      <VariableType>4 Bytes</VariableType>
+      <Address>client.dll+1213C4</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>212</ID>
+      <Description>"HUD_Money"</Description>
+      <VariableType>4 Bytes</VariableType>
+      <Address>client.dll+1213C4</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>213</ID>
+      <Description>"No description"</Description>
+      <VariableType>4 Bytes</VariableType>
+      <Address>20742094</Address>
     </CheatEntry>
   </CheatEntries>
   <CheatCodes>

@@ -4,9 +4,26 @@ using static CS16Cheat.core.Memory;
 
 namespace CS16Cheat.core;
 
+internal enum Modules
+{
+    hw,
+    client,
+}
+
 internal static class Game
 {
-    internal static string[] GAME_MODULES = ["hw.dll", "client.dll"];
+    internal static Dictionary<Modules, nint> baseAddresses = new()
+    {
+        { Modules.hw, IntPtr.Zero },
+        { Modules.client, IntPtr.Zero },
+    };
+
+    internal static Dictionary<string, Modules> valuesAndModules = new()
+    {
+        { "health", Modules.hw },
+        { "currentSlotAmmo", Modules.hw },
+        { "money", Modules.client },
+    };
 
     [DllImport("kernel32.dll", SetLastError = true)]
     private static extern IntPtr OpenProcess(
@@ -15,28 +32,29 @@ internal static class Game
         int dwProcessId
     );
 
-    internal static Process? FindGameProcess(string processName)
+    internal static Process FindGameProcess(string processName)
     {
         Process[] processes = Process.GetProcessesByName(processName);
 
         if (processes.Length == 0)
         {
             Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine($"Process {processName}.exe not found");
+            Console.WriteLine($"[X] Process {processName}.exe not found");
             Console.ResetColor();
-            return null;
+            Console.WriteLine("Start CS 1.6 and try again\nPress any key to exit...");
+            Console.ReadKey();
+            Environment.Exit(1);
         }
+        var process = processes[0];
 
-        Process gameProcess = processes[0];
-        Console.WriteLine($"Process found: {gameProcess.ProcessName}.exe (PID: {gameProcess.Id})");
-
-        return gameProcess;
+        Console.WriteLine($"[+] Process found: {process.ProcessName}.exe (PID: {process.Id})");
+        return process;
     }
 
     internal static IntPtr OpenGameProcess(int processId)
     {
         IntPtr handle = OpenProcess(
-            Program.PROCESS_VM_READ | Program.PROCESS_QUERY_INFORMATION,
+            Initialization.PROCESS_VM_READ | Initialization.PROCESS_QUERY_INFORMATION,
             false,
             processId
         );
@@ -72,21 +90,26 @@ internal static class Game
                 return module.BaseAddress;
             }
         }
-        Console.ForegroundColor = ConsoleColor.Red;
-        Console.WriteLine($"[X] Module {moduleName} not found!");
-        Console.ResetColor();
         return IntPtr.Zero;
     }
 
-    internal static nint FollowPointerChain(nint processHandle, nint startAddress, int[] offsets)
+    internal static nint FollowPointerChain(nint startAddress, int[] offsets) // client.dll + 0x1234 + 0x7D + 0x1230
     {
-        nint currentAddress = startAddress;
+        nint currentAddress = startAddress + offsets[0];
 
         byte[] buffer = new byte[4];
 
-        for (int i = 0; i < offsets.Length - 1; i++)
+        for (int i = 1; i < offsets.Length; i++)
         {
-            if (!ReadProcessMemory(processHandle, currentAddress, buffer, buffer.Length, out _))
+            if (
+                !ReadProcessMemory(
+                    Initialization._handle,
+                    currentAddress,
+                    buffer,
+                    buffer.Length,
+                    out _
+                )
+            )
             {
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine($"[X] Failed to read at 0x{currentAddress.ToInt64():X}");
@@ -96,11 +119,6 @@ internal static class Game
 
             currentAddress = (nint)BitConverter.ToInt32(buffer, 0);
             currentAddress += offsets[i];
-        }
-
-        if (offsets.Length > 0)
-        {
-            currentAddress += offsets[^1];
         }
 
         return currentAddress;
