@@ -6,6 +6,11 @@ internal static class PointerResolver
 {
     internal static nint FollowPointerChain(nint startAddress, int[] offsets)
     {
+        if (startAddress == IntPtr.Zero)
+        {
+            return IntPtr.Zero;
+        }
+
         nint currentAddress = startAddress + offsets[0];
 
         byte[] buffer = new byte[4];

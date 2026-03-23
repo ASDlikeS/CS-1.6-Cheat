@@ -12,7 +12,6 @@ class Program
         ProcessManager.Initialize(csProcessName);
         ModuleManager.InitializeAll();
 
-        Console.Write("".PadRight(50));
         var startLine = Console.CursorTop;
 
         while (true)
@@ -32,7 +31,7 @@ class Program
 
                 if (dataAddr == IntPtr.Zero)
                 {
-                    values[data.Name] = null;
+                    values[data.Name] = "value not found, probably base address doesn't exist.";
                     continue;
                 }
 
@@ -63,6 +62,14 @@ class Program
             foreach (var n in values)
             {
                 Console.WriteLine($"{n.Key}: {n.Value ?? null}");
+            }
+
+            int endLine = Console.CursorTop;
+
+            for (; endLine > startLine; endLine--)
+            {
+                Console.SetCursorPosition(0, endLine);
+                Console.Write(new string(' ', Console.WindowWidth));
             }
 
             Thread.Sleep(100);
