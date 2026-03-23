@@ -41,7 +41,7 @@ class Program
             if (values.Count == 0)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("[X] There's no values in addresses found!");
+                Console.WriteLine("[X] There's no values in addresses found!".PadRight(20));
                 Console.ResetColor();
             }
             else if (values.Count < GameData.AllFields.Length)
@@ -55,7 +55,7 @@ class Program
             else
             {
                 Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine($"[+] All values were found successfully!");
+                Console.WriteLine($"[+] All values were found successfully!".PadRight(20));
                 Console.ResetColor();
             }
 
@@ -65,14 +65,13 @@ class Program
             }
 
             int endLine = Console.CursorTop;
+            Thread.Sleep(100);
 
-            for (; endLine > startLine; endLine--)
+            for (; endLine > startLine - 1; endLine--)
             {
                 Console.SetCursorPosition(0, endLine);
                 Console.Write(new string(' ', Console.WindowWidth));
             }
-
-            Thread.Sleep(100);
         }
 
         if (!ProcessManager.CloseHandleP())
