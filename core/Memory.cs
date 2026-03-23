@@ -2,7 +2,7 @@ using System.Runtime.InteropServices;
 
 namespace CS16Cheat.core;
 
-internal static class Memory
+public static class Memory
 {
     [DllImport("kernel32.dll", SetLastError = true)]
     private static extern bool VirtualProtectEx(
@@ -32,7 +32,7 @@ internal static class Memory
 
     private const uint PAGE_READWRITE = 0x04;
 
-    internal enum ReadType
+    public enum ReadType
     {
         Int64,
         UInt64,

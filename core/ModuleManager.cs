@@ -2,7 +2,7 @@ using System.Diagnostics;
 
 namespace CS16Cheat.core;
 
-internal enum Modules
+public enum Modules
 {
     hw,
     client,
