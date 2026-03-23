@@ -6,16 +6,17 @@ public static class Memory
 {
     [DllImport("kernel32.dll", SetLastError = true)]
     private static extern bool VirtualProtectEx(
-        IntPtr hProcess,
+        nint hProcess,
         nint lpAddress,
+        uint dwSize,
         uint flNewProtect,
         out int lpflOldProtect
     );
 
     [DllImport("kernel32.dll", SetLastError = true)]
     internal static extern bool ReadProcessMemory(
-        IntPtr hProcess,
-        IntPtr lpBaseAddress,
+        nint hProcess,
+        nint lpBaseAddress,
         byte[] lpBuffer,
         int dwSize,
         out int lpNumberOfBytesRead
@@ -23,8 +24,8 @@ public static class Memory
 
     [DllImport("kernel32.dll", SetLastError = true)]
     private static extern bool WriteProcessMemory(
-        IntPtr hProcess,
-        IntPtr lpBaseAddress,
+        nint hProcess,
+        nint lpBaseAddress,
         byte[] lpBuffer,
         int dwSize,
         out int lpNumberOfBytesWritten
@@ -45,29 +46,16 @@ public static class Memory
         Byte,
     }
 
-    internal static object? ReadWTypeMemory(nint address, ReadType type)
+    internal static T? Read<T> (nint address) where T: struct
     {
-        byte size = type switch
-        {
-            ReadType.Int64 => 8,
-            ReadType.Double => 8,
-            ReadType.UInt64 => 8,
-            ReadType.Int32 => 4,
-            ReadType.UInt32 => 4,
-            ReadType.Float => 4,
-            ReadType.Short => 2,
-            ReadType.Bool => 1,
-            ReadType.Byte => 1,
-            _ => throw new NotImplementedException(),
-        };
-
+        int size = Marshal.SizeOf<T>();
         var buffer = new byte[size];
 
         if (!ReadProcessMemory(ProcessManager.Handle, address, buffer, size, out int bytesRead))
         {
             int errorCode = Marshal.GetLastWin32Error();
             Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine($"Error of reading memory in type {type}. | ERROR_CODE: {errorCode}");
+            Console.WriteLine($"Error of reading memory in type {}. | ERROR_CODE: {errorCode}");
             Console.ResetColor();
             return null;
         }
