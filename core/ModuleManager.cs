@@ -6,6 +6,7 @@ public enum Modules
 {
     hw,
     client,
+    engine,
 }
 
 internal static class ModuleManager
@@ -19,8 +20,9 @@ internal static class ModuleManager
         return _baseAddresses[module];
     }
 
-    internal static void InitializeAll()
+    internal static void Initialize()
     {
+        Console.WriteLine("[*] Modules initialization...");
         bool isSuccess = true;
         foreach (Modules module in Enum.GetValues<Modules>())
         {
@@ -39,7 +41,7 @@ internal static class ModuleManager
             );
             Console.ResetColor();
             string answer = Console.ReadLine()?.ToLower() ?? "";
-            if (answer == "y")
+            if (answer != "y")
             {
                 ProcessManager.CloseHandleP();
                 Console.WriteLine("Press any key to exit...");

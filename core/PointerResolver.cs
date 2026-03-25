@@ -17,6 +17,7 @@ internal static class PointerResolver
 
         for (int i = 1; i < offsets.Length; i++)
         {
+            // Console.WriteLine($"[engine.dll + 0x{offsets[0]:X}] = 0x{currentAddress:X}");
             if (
                 !ReadProcessMemory(
                     ProcessManager.Handle,
@@ -28,14 +29,21 @@ internal static class PointerResolver
             )
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"[X] Failed to read at 0x{currentAddress.ToInt64():X}");
+                Console.WriteLine(
+                    $"[X] Failed to read at 0x{currentAddress - offsets[i]:X} + {offsets[i]}"
+                );
                 Console.ResetColor();
                 return IntPtr.Zero;
             }
-
-            currentAddress = (nint)BitConverter.ToInt32(buffer, 0);
+            currentAddress = BitConverter.ToInt32(buffer, 0);
+            // Console.ForegroundColor = ConsoleColor.Green;
+            // Console.WriteLine($"READ SUCCESS! 0x{currentAddress:X}");
+            // Console.ResetColor();
             currentAddress += offsets[i];
+            // Console.WriteLine($"0x{currentAddress:X} + 0x{offsets[i]:X}");
         }
+
+        // Console.WriteLine(new string('=', Console.WindowWidth));
 
         return currentAddress;
     }

@@ -5,8 +5,10 @@ namespace CS16Cheat.core;
 
 internal static class ProcessManager
 {
+    private const string processName = "hl";
+
     [DllImport("kernel32.dll", SetLastError = true)]
-    private static extern IntPtr OpenProcess(
+    private static extern nint OpenProcess(
         uint dwDesiredAccess,
         bool bInheritHandle,
         int dwProcessId
@@ -20,18 +22,26 @@ internal static class ProcessManager
     internal const uint PROCESS_VM_OPERATION = 0x0008;
     internal const uint PROCESS_QUERY_INFORMATION = 0x0400;
 
-    internal static IntPtr Handle { get; private set; }
+    internal static nint Handle { get; private set; }
     internal static Process GameProcess { get; private set; } = null!;
 
-    internal static void Initialize(string processName)
+    internal static void Initialize()
     {
+        Console.WriteLine("[*] Process hl.exe initialization...");
         GameProcess = FindProcess(processName);
         Handle = OpenGameProcess(GameProcess.Id);
     }
 
     internal static bool CloseHandleP()
     {
-        return CloseHandle(Handle);
+        try
+        {
+            return CloseHandle(Handle);
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     private static Process FindProcess(string processName)
@@ -50,11 +60,11 @@ internal static class ProcessManager
         return process;
     }
 
-    private static IntPtr OpenGameProcess(int processId)
+    private static nint OpenGameProcess(int processId)
     {
         uint access =
             PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_VM_OPERATION | PROCESS_QUERY_INFORMATION;
-        IntPtr handle = OpenProcess(access, false, processId);
+        nint handle = OpenProcess(access, false, processId);
 
         if (handle == IntPtr.Zero)
         {

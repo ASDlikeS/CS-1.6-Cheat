@@ -42,10 +42,10 @@
       <Address>client.dll+1213C4</Address>
     </CheatEntry>
     <CheatEntry>
-      <ID>213</ID>
+      <ID>214</ID>
       <Description>"No description"</Description>
-      <VariableType>4 Bytes</VariableType>
-      <Address>20742094</Address>
+      <VariableType>Float</VariableType>
+      <Address>218CFE4C</Address>
     </CheatEntry>
   </CheatEntries>
   <CheatCodes>
