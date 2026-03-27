@@ -5,7 +5,7 @@ namespace CS16Cheat.core;
 
 internal static class ProcessManager
 {
-    private const string processName = "hl";
+    private static readonly string[] processNames = ["hl", "cs"];
 
     [DllImport("kernel32.dll", SetLastError = true)]
     private static extern nint OpenProcess(
@@ -28,7 +28,7 @@ internal static class ProcessManager
     internal static void Initialize()
     {
         Console.WriteLine("[*] Process hl.exe initialization...");
-        GameProcess = FindProcess(processName);
+        GameProcess = FindProcess(processNames);
         Handle = OpenGameProcess(GameProcess.Id);
     }
 
@@ -44,18 +44,28 @@ internal static class ProcessManager
         }
     }
 
-    private static Process FindProcess(string processName)
+    private static Process FindProcess(string[] processNames)
     {
-        var processes = Process.GetProcessesByName(processName);
-        if (processes.Length == 0)
+        Process process = new();
+        foreach(var proc in processNames)
+        {
+            var findProcList = Process.GetProcessesByName(proc);
+            if(findProcList.Length > 0)
+            {
+                process = findProcList[0];
+                break;
+            }
+        }
+        if (process == null)
         {
             Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine($"[X] Process {processName}.exe not found");
+            Console.WriteLine($"[X] There's no processes from process list here...");
             Console.ResetColor();
+            Console.ReadKey();
+            Console.WriteLine("Press any key to exit...");  
             Environment.Exit(1);
         }
 
-        var process = processes[0];
         Console.WriteLine($"[+] Process found: {process.ProcessName}.exe (PID: {process.Id})");
         return process;
     }
