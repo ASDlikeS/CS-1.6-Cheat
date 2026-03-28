@@ -18,17 +18,30 @@ static class Program
             Info.ShowStartHandle();
             Utils.SetupCancelHandler();
 
-            var renderer = new Renderer();
-            var renderThread = new Thread(new ThreadStart(renderer.Start().Wait));
+            using var renderer = new Renderer();
+            await renderer.Run();
 
             var localPlayer = new Entity();
             List<Entity> entities = [];
 
             while (_isRunning)
             {
-                nint entityList = Memory.ReadPointer(
-                    ModuleManager.GetBaseAddress(Modules.hw) + Offsets.entityList
-                );
+                nint entityList = IntPtr.Zero;
+                if (Info.CURRENT_VERSION == 10039)
+                {
+                    entityList = Memory.ReadPointer(
+                        ModuleManager.GetBaseAddress(Modules.engine)
+                            + Offsets.entityListByVersion[Info.CURRENT_VERSION]
+                    );
+                }
+                else
+                {
+                    Console.WriteLine("[*] Read addresses...");
+                    entityList = Memory.ReadPointer(
+                        ModuleManager.GetBaseAddress(Modules.hw)
+                            + Offsets.entityListByVersion[Info.CURRENT_VERSION]
+                    );
+                }
                 localPlayer.Address = Memory.ReadPointer(entityList + Offsets.initialEntity);
                 localPlayer.Team = Memory.ReadInt32(localPlayer.Address + Offsets.team);
                 nint localData = Memory.ReadPointer(localPlayer.Address + Offsets.localData);
@@ -50,9 +63,9 @@ static class Program
             Console.WriteLine($"STACK: {ex.StackTrace}");
             Console.ResetColor();
             if (ProcessManager.Handle != IntPtr.Zero)
-                ProcessManager.CloseHandle(ProcessManager.Handle);
+                _ = ProcessManager.CloseHandle(ProcessManager.Handle);
             Console.WriteLine("\nPress any key to exit...");
-            Console.ReadKey();
+            _ = Console.ReadKey();
             return 1;
         }
     }

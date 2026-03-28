@@ -6,6 +6,7 @@ public enum Modules
 {
     hw,
     client,
+    engine,
 }
 
 internal static class ModuleManager
