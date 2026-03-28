@@ -1,19 +1,18 @@
 using System.Diagnostics;
 
-namespace CS16Cheat.core;
+namespace CS16Cheat.LWOperations;
 
 public enum Modules
 {
     hw,
     client,
-    engine,
 }
 
 internal static class ModuleManager
 {
-    private static readonly Dictionary<Modules, IntPtr> _baseAddresses = [];
+    private static readonly Dictionary<Modules, nint> _baseAddresses = [];
 
-    internal static IntPtr GetBaseAddress(Modules module)
+    internal static nint GetBaseAddress(Modules module)
     {
         if (!_baseAddresses.ContainsKey(module))
             throw new KeyNotFoundException($"Module {module} not initialized");
@@ -43,7 +42,7 @@ internal static class ModuleManager
             string answer = Console.ReadLine()?.ToLower() ?? "";
             if (answer != "y")
             {
-                ProcessManager.CloseHandleP();
+                ProcessManager.CloseHandle(ProcessManager.Handle);
                 Console.WriteLine("Press any key to exit...");
                 Console.ReadKey();
                 Environment.Exit(1);
@@ -54,7 +53,7 @@ internal static class ModuleManager
         }
     }
 
-    private static IntPtr GetModuleBaseAddress(Process process, string moduleName)
+    private static nint GetModuleBaseAddress(Process process, string moduleName)
     {
         foreach (ProcessModule module in process.Modules)
         {

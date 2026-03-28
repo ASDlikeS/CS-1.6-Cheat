@@ -1,27 +1,26 @@
+using CS16Cheat.core;
+using CS16Cheat.LWOperations;
+
 namespace CS16Cheat.utils;
 
-static class Info
+public static class Info
 {
-    internal static void ShowStartHandle()
-    {
-        Console.WriteLine(
-            "This program uses 2 type of cs 1.6, classic and custom versions, if classic mode won't work correctly, you can switch it on custom mode."
-        );
-        Console.WriteLine("1. Classic CS 1.6\n2. Custom bundle CS 1.6");
-        Console.Write("Choose [1 default]: ");
-        _ = int.TryParse(Console.ReadLine(), out int answer);
-        if (answer == 2)
-        {
-            Program.openMode = "custom";
-        }
-    }
+    public const int CLIENT_VERSION = 8684;
 
-    internal static void ShowKeybinds()
+    public static void ShowStartHandle()
     {
-        Console.WriteLine(new string('=', Console.WindowWidth));
-        Console.WriteLine("Key binds and their property:");
-        Console.WriteLine("[f1] Set infinity ammo on current slot");
-        Console.WriteLine("[f2] Set infinity HP");
-        Console.WriteLine("[f3] Set 16_000 money");
+        int isCorrectVerison = Memory.ReadInt32(
+            ModuleManager.GetBaseAddress(Modules.hw) + Offsets.clientVersion
+        );
+        if (CLIENT_VERSION != isCorrectVerison)
+        {
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine(
+                "[!] This cheat works and tested on version:[Aug 3 2020 (8684) build].\nYou can check your CS 1.6 version, using command `version` in client terminal."
+            );
+            Console.ResetColor();
+            Console.Write("You sure of using 8684 build? [Y/n] ");
+            Utils.GetChooseMessage();
+        }
     }
 }

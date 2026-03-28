@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace CS16Cheat.core;
+namespace CS16Cheat.LWOperations;
 
 internal static class ProcessManager
 {
@@ -23,6 +23,7 @@ internal static class ProcessManager
     internal const uint PROCESS_QUERY_INFORMATION = 0x0400;
 
     internal static nint Handle { get; private set; }
+    internal static nint ProcessWindowHandle { get; private set; }
     internal static Process GameProcess { get; private set; } = null!;
 
     internal static void Initialize()
@@ -32,25 +33,13 @@ internal static class ProcessManager
         Handle = OpenGameProcess(GameProcess.Id);
     }
 
-    internal static bool CloseHandleP()
-    {
-        try
-        {
-            return CloseHandle(Handle);
-        }
-        catch
-        {
-            return false;
-        }
-    }
-
     private static Process FindProcess(string[] processNames)
     {
         Process process = new();
-        foreach(var proc in processNames)
+        foreach (var proc in processNames)
         {
             var findProcList = Process.GetProcessesByName(proc);
-            if(findProcList.Length > 0)
+            if (findProcList.Length > 0)
             {
                 process = findProcList[0];
                 break;
@@ -62,11 +51,12 @@ internal static class ProcessManager
             Console.WriteLine($"[X] There's no processes from process list here...");
             Console.ResetColor();
             Console.ReadKey();
-            Console.WriteLine("Press any key to exit...");  
+            Console.WriteLine("Press any key to exit...");
             Environment.Exit(1);
         }
 
         Console.WriteLine($"[+] Process found: {process.ProcessName}.exe (PID: {process.Id})");
+        ProcessWindowHandle = process.MainWindowHandle;
         return process;
     }
 
