@@ -1,22 +1,24 @@
+using CS16Cheat.LWOperations;
+using CS16Cheat.utils;
+
 namespace CS16Cheat.core;
 
 public static class Offsets
 {
     // Module: hw.dll
-    public static int viewAngles = 0x108AEC4;
-    public static Dictionary<int, int> entityListByVersion = new()
+    public const int viewAngles = 0x108AEC4;
+    public static readonly Dictionary<ClientVersion, EntityListEntry> EntityList = new()
     {
-        { 8684, 0x7F6304 },
-        { 10039, 0x7F5F84 },
+        { ClientVersion.V8684, new EntityListEntry(0x7F6304, Modules.hw) },
     };
 
     // Entity
-    public static int position = 0x8;
-    public static float health = 0x160;
-    public static int team = 0x1C8;
-    public static int localData = 0x4;
+    public const int position = 0x8;
+    public const int health = 0x160;
+    public const int team = 0x1C8;
+    public const int objectData = 0x4;
 
     // List
-    public static int initialEntity = 0x7C;
-    public static int step = 0x324;
+    public const int localPlayer = 0x7C;
+    public const int step = 0x324;
 }

@@ -1,9 +1,8 @@
 using System.Numerics;
-using CS16Cheat.core;
 
 namespace CS16Cheat.core;
 
-public class Entity()
+public record Entity()
 {
     public nint Address { get; set; }
     public Vector3 Position { get; set; }

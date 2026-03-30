@@ -8,6 +8,7 @@ internal static class ProcessManager
     private static readonly string[] processNames = ["hl", "cs"];
 
     [DllImport("kernel32.dll", SetLastError = true)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     private static extern nint OpenProcess(
         uint dwDesiredAccess,
         bool bInheritHandle,
@@ -15,6 +16,7 @@ internal static class ProcessManager
     );
 
     [DllImport("kernel32.dll", SetLastError = true)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     internal static extern bool CloseHandle(IntPtr hObject);
 
     internal const uint PROCESS_VM_READ = 0x0010;
@@ -24,7 +26,7 @@ internal static class ProcessManager
 
     internal static nint Handle { get; private set; }
     internal static nint ProcessWindowHandle { get; private set; }
-    internal static Process GameProcess { get; private set; } = null!;
+    internal static Process? GameProcess { get; private set; }
 
     internal static void Initialize()
     {

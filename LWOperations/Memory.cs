@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using System.Numerics;
 using System.Runtime.InteropServices;
 
@@ -16,6 +15,7 @@ public static class Memory
     // );
 
     [DllImport("kernel32.dll", SetLastError = true)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     private static extern bool ReadProcessMemory(
         nint hProcess,
         nint lpBaseAddress,
@@ -25,6 +25,7 @@ public static class Memory
     );
 
     [DllImport("kernel32.dll", SetLastError = true)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     private static extern bool WriteProcessMemory(
         nint hProcess,
         nint lpBaseAddress,
@@ -32,28 +33,6 @@ public static class Memory
         int dwSize,
         out int lpNumberOfBytesWritten
     );
-
-    private static void ReadMemoryHandle(nint address, byte[] buffer)
-    {
-        if (
-            !ReadProcessMemory(
-                ProcessManager.Handle,
-                address,
-                buffer,
-                buffer.Length,
-                out int bytesRead
-            )
-        )
-        {
-            throw new Win32Exception(
-                $"ERROR READING MEMORY | ERROR_CODE: {Marshal.GetLastWin32Error()}"
-            );
-        }
-        if (bytesRead < buffer.Length)
-        {
-            throw new FormatException($"SMALL COUNT READING BYTES");
-        }
-    }
 
     // private const uint PAGE_READWRITE = 0x04;
 
@@ -66,10 +45,28 @@ public static class Memory
     /// Method reads 12 bytes (3 float by 4 bytes) starts since initial address.
     /// It is assumed that the data is arranged sequentially: X, Y, Z.
     /// </remarks>
-    public static Vector3 ReadVec3(nint address)
+    public static Vector3? ReadVec3(nint address)
     {
         var buffer = new byte[12];
-        ReadMemoryHandle(address, buffer);
+        try
+        {
+            if (
+                !ReadProcessMemory(
+                    ProcessManager.Handle,
+                    address,
+                    buffer,
+                    buffer.Length,
+                    out int bytesRead
+                )
+            )
+                return null;
+            if (bytesRead < buffer.Length)
+                return null;
+        }
+        catch
+        {
+            return null;
+        }
         return new Vector3(
             BitConverter.ToSingle(buffer, 0),
             BitConverter.ToSingle(buffer, 4),
@@ -77,17 +74,80 @@ public static class Memory
         );
     }
 
-    public static int ReadInt32(nint address)
+    public static int? ReadInt32(nint address)
     {
-        var buffer = new byte[4];
-        ReadMemoryHandle(address, buffer);
-        return BitConverter.ToInt32(buffer, 0);
+        try
+        {
+            var buffer = new byte[4];
+            if (
+                !ReadProcessMemory(
+                    ProcessManager.Handle,
+                    address,
+                    buffer,
+                    buffer.Length,
+                    out int bytesRead
+                )
+            )
+                return null;
+            if (bytesRead < buffer.Length)
+                return null;
+            return BitConverter.ToInt32(buffer, 0);
+        }
+        catch
+        {
+            return null;
+        }
     }
 
-    public static nint ReadPointer(nint address)
+    public static float? ReadFloat(nint address)
+    {
+        var buffer = new byte[4];
+
+        try
+        {
+            if (
+                !ReadProcessMemory(
+                    ProcessManager.Handle,
+                    address,
+                    buffer,
+                    buffer.Length,
+                    out int bytesRead
+                )
+            )
+                return null;
+            if (bytesRead < buffer.Length)
+                return null;
+        }
+        catch (System.Exception)
+        {
+            return null;
+        }
+
+        return BitConverter.ToSingle(buffer, 0);
+    }
+
+    public static nint? ReadPointer(nint address)
     {
         var buffer = new byte[IntPtr.Size];
-        ReadMemoryHandle(address, buffer);
+        try
+        {
+            if (
+                !ReadProcessMemory(
+                    ProcessManager.Handle,
+                    address,
+                    buffer,
+                    buffer.Length,
+                    out int bytesRead
+                )
+            )
+                return null;
+            if (bytesRead < buffer.Length)
+                return null;
+        }
+        catch
+        {
+            return null;
+        }
         return IntPtr.Size == 4
             ? new nint(BitConverter.ToInt32(buffer, 0))
             : new nint(BitConverter.ToInt64(buffer, 0));

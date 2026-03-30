@@ -1,43 +1,58 @@
-using System.ComponentModel;
-using CS16Cheat.core;
 using CS16Cheat.LWOperations;
 
 namespace CS16Cheat.utils;
 
+public enum ClientVersion
+{
+    V8684,
+}
+
 public static class Info
 {
-    public static int[] CLIENT_VERSIONS { get; } = [8684, 10039];
-    public static int CURRENT_VERSION { get; private set; } = 8684;
+    private const string RepoUrl = "https://github.com/ASDlikeS/CS-1.6-Cheat/issues/new";
+
+    public static ClientVersion CurrentVersion { get; private set; }
 
     public static void ShowStartHandle()
     {
-        Console.Write(
-            "Enter CS 1.6 version (You can check it, using command `version` in client terminal): "
+        Console.WriteLine(
+            "Choose CS 1.6 version build (You can check it, using command `version` in game terminal): "
         );
-        if (!int.TryParse(Console.ReadLine(), out int answer))
+
+        while (true)
         {
-            throw new InvalidDataException(
-                "[X] You have to enter only numbers of your CS 1.6 version"
-            );
+            Console.Write("1. Aug 3 2020 (8684) build\n2. I have another game version.\nChoose: ");
+
+            if (int.TryParse(Console.ReadLine(), out int answer))
+            {
+                switch (answer)
+                {
+                    case 1:
+                        CurrentVersion = ClientVersion.V8684;
+                        return;
+                    case 2:
+                        HandleUnsupportedVersion();
+                        return;
+                    default:
+                        Console.WriteLine("Invalid choice. Please enter 1 or 2.");
+                        break;
+                }
+            }
+            else
+            {
+                Console.WriteLine("Invalid input. Please enter a number.");
+            }
         }
+    }
 
-        CURRENT_VERSION = answer;
-
-        Console.WriteLine("[*] Checking client version...");
-
-        if (!CLIENT_VERSIONS.Contains(CURRENT_VERSION))
-        {
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine(
-                "[!] Your client version doesn't exist in tested ones. Tested on :[Aug 3 2020 (8684) build | Apr 19 2024 (10039)].\nYou can check it, using command `version` in client terminal."
-            );
-            Console.ResetColor();
-            Console.Write("You sure of using one of these builds? [Y/n] ");
-            Utils.GetChooseMessage();
-        }
-        Console.ForegroundColor = ConsoleColor.Green;
-        Console.WriteLine($"[+] Version {CURRENT_VERSION} detected. Compatibiliy x86-Arch");
-        Console.ResetColor();
-        Console.WriteLine($"[*] Configure cheat by current version...");
+    private static void HandleUnsupportedVersion()
+    {
+        ProcessManager.CloseHandle(ProcessManager.Handle);
+        Console.WriteLine(
+            $"We can implement your build if you create new issue on my github repo: {RepoUrl}"
+        );
+        Console.WriteLine("Press any key to exit...");
+        Console.ReadKey();
+        Environment.Exit(0);
     }
 }

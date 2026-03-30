@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Globalization;
 
 namespace CS16Cheat.LWOperations;
 
@@ -6,7 +7,6 @@ public enum Modules
 {
     hw,
     client,
-    engine,
 }
 
 internal static class ModuleManager
@@ -15,9 +15,9 @@ internal static class ModuleManager
 
     internal static nint GetBaseAddress(Modules module)
     {
-        if (!_baseAddresses.ContainsKey(module))
+        if (!_baseAddresses.TryGetValue(module, out nint value))
             throw new KeyNotFoundException($"Module {module} not initialized");
-        return _baseAddresses[module];
+        return value;
     }
 
     internal static void Initialize()
@@ -26,7 +26,10 @@ internal static class ModuleManager
         bool isSuccess = true;
         foreach (Modules module in Enum.GetValues<Modules>())
         {
-            nint baseAddress = GetModuleBaseAddress(ProcessManager.GameProcess, $"{module}.dll");
+            var process =
+                ProcessManager.GameProcess
+                ?? throw new NotImplementedException("ERROR: PROCESS_NOT_INITIALIZED");
+            nint baseAddress = GetModuleBaseAddress(process, $"{module}.dll");
             if (baseAddress == IntPtr.Zero)
                 isSuccess = false;
             _baseAddresses[module] = baseAddress;
@@ -40,7 +43,7 @@ internal static class ModuleManager
                 "You're sure you want to continue? Some features may NOT work, this will affect the gaming experience [y/N]: "
             );
             Console.ResetColor();
-            string answer = Console.ReadLine()?.ToLower() ?? "";
+            string answer = Console.ReadLine()?.ToLower(CultureInfo.CurrentCulture) ?? "";
             if (answer != "y")
             {
                 ProcessManager.CloseHandle(ProcessManager.Handle);
