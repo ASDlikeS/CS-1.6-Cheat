@@ -2,7 +2,7 @@ using System.Numerics;
 
 namespace CS16Cheat.core;
 
-public record Entity()
+public record struct Entity()
 {
     public nint Address { get; set; }
     public Vector3 Position { get; set; }

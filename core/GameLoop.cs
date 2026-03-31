@@ -27,7 +27,10 @@ static class GameLoop
             try
             {
                 GameData.UpdateGameData();
-                Thread.Sleep(1);
+                if (Aimbot.IsEnabled)
+                {
+                    Aimbot.Run();
+                }
             }
             catch (Exception ex)
             {

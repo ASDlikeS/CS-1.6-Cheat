@@ -1,6 +1,7 @@
 using System.Numerics;
 using System.Runtime.InteropServices;
 using CS16Cheat.core;
+using CS16Cheat.utils;
 using ImGuiNET;
 using Silk.NET.Input;
 using Silk.NET.Maths;
@@ -8,7 +9,7 @@ using Silk.NET.OpenGL;
 using Silk.NET.OpenGL.Extensions.ImGui;
 using Silk.NET.Windowing;
 
-namespace CS16Cheat.Graphic;
+namespace CS16Cheat.Overlay;
 
 public class Renderer : IDisposable
 {
@@ -45,31 +46,27 @@ public class Renderer : IDisposable
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
     private static extern bool ShowWindow(nint hWnd, int nIndex);
 
+    private readonly nint HWND_TOPMOST = new(-1);
     private const int GWL_EXSTYLE = -20; // Sets a new extended window style.
     private const int WS_EX_LAYERED = 0x80000; // FLAG: window supports alpha-channel(opacity)
-    private const int WS_EX_TRANSPARENT = 0x20; // FLAG: input work throw window
-    private const int WS_EX_TOPMOST = 0x8; // FLAG: window opens on the topmost place
-    private const int WS_EX_TOOLWINDOW = 0x80;
+    private const int WS_EX_TOPMOST = 0x8;
     private const uint LWA_COLORKEY = 0x1; // MODE: opacity by color
-    private static readonly nint HWND_TOPMOST = new(-1);
     private const uint SWP_NOMOVE = 0x2;
     private const uint SWP_NOSIZE = 0x1;
-    private const int SW_HIDE = 0x0;
-    private const int SW_SHOW = 0x5;
+
 #pragma warning disable CA2213
     private readonly IWindow _window;
-#pragma warning restore  CA2213
+#pragma warning restore CA2213
     private IInputContext _input = null!;
     private GL _gl = null!;
     private ImGuiController _imGuiController = null!;
     private bool _disposed;
 
-    internal static bool _hasError;
-    internal static bool _hasWarn;
+    internal static bool HasError { get; set; }
+    internal static bool HasWarn { get; set; }
     internal static string? LastErrorMessage { get; set; }
     internal static string? LastWarnMessage { get; set; }
-
-    internal static IMouse Mouse { get; private set; }
+    private static bool _isOverlayOpened;
 
     public Renderer()
     {
@@ -77,7 +74,7 @@ public class Renderer : IDisposable
 
         options.Size = new Vector2D<int>(1920, 1080);
         options.WindowBorder = WindowBorder.Hidden;
-        options.TransparentFramebuffer = true;
+        options.TransparentFramebuffer = false;
         options.VSync = false;
         options.FramesPerSecond = 0;
 
@@ -90,45 +87,32 @@ public class Renderer : IDisposable
 
     private static void DrawUI()
     {
-        ImGui.Begin("Entity List");
+        ImGui.Begin($"CS 1.6 ({Info.CurrentVersion}) 2026 Cheat");
 
-        if (ImGui.BeginTable("EntitiesTable", 4, ImGuiTableFlags.Borders | ImGuiTableFlags.RowBg))
+        if (HasError)
         {
-            // Заголовки
-            ImGui.TableSetupColumn("Team", ImGuiTableColumnFlags.WidthFixed, 60);
-            ImGui.TableSetupColumn("Health", ImGuiTableColumnFlags.WidthFixed, 80);
-            ImGui.TableSetupColumn("Position X", ImGuiTableColumnFlags.WidthFixed, 100);
-            ImGui.TableSetupColumn("Position Y", ImGuiTableColumnFlags.WidthFixed, 100);
-            ImGui.TableHeadersRow();
+            ImGui.TextColored(new Vector4(1, 0, 0, 1), LastErrorMessage);
+        }
+        else
+        {
+            ImGui.TextColored(new Vector4(0, 1, 0, 1), "Execute correct.");
+        }
+        if (HasWarn)
+        {
+            ImGui.TextColored(new Vector4(1, 1, 0, 1), LastWarnMessage);
+        }
 
-            for (int i = 0; i < GameData.Entities.Length; i++)
+        ImGui.Checkbox("Aimbot", ref Aimbot.IsEnabled);
+        if (Aimbot.IsEnabled)
+        {
+            if (Aimbot.IsAimingOn)
             {
-                var entity = GameData.Entities[i];
-                if (entity.Team == 0)
-                    break;
-
-                ImGui.TableNextRow();
-
-                // Team
-                ImGui.TableSetColumnIndex(0);
-                ImGui.Text(entity.Team.ToString());
-
-                // Health (с цветом)
-                ImGui.TableSetColumnIndex(1);
-                Vector4 healthColor =
-                    entity.Health < 30 ? new Vector4(1, 0, 0, 1) : new Vector4(0, 1, 0, 1);
-                ImGui.TextColored(healthColor, entity.Health.ToString());
-
-                // Position X
-                ImGui.TableSetColumnIndex(2);
-                ImGui.Text(entity.Position.X.ToString());
-
-                // Position Y
-                ImGui.TableSetColumnIndex(3);
-                ImGui.Text(entity.Position.Y.ToString());
+                ImGui.TextColored(new Vector4(0, 1, 0, 1), "Aiming: active");
             }
-
-            ImGui.EndTable();
+            else
+            {
+                ImGui.TextColored(new Vector4(1, 0, 0, 1), "Aiming: idle");
+            }
         }
 
         ImGui.End();
@@ -139,16 +123,14 @@ public class Renderer : IDisposable
         if (_window.Native != null && _window.Native.Win32.HasValue)
         {
             nint hWnd = _window.Native.Win32.Value.Hwnd;
-            ShowWindow(hWnd, SW_HIDE);
+
             int exStyle = GetWindowLong(hWnd, GWL_EXSTYLE);
-            var err = SetWindowLong(
-                hWnd,
-                GWL_EXSTYLE,
-                exStyle | WS_EX_TOPMOST | WS_EX_TRANSPARENT | WS_EX_TOOLWINDOW | WS_EX_LAYERED
-            );
+
+            int newStyle = exStyle | WS_EX_LAYERED | WS_EX_TOPMOST;
+            _ = SetWindowLong(hWnd, GWL_EXSTYLE, newStyle);
+
             SetLayeredWindowAttributes(hWnd, 0x000000, 255, LWA_COLORKEY);
-            SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-            ShowWindow(hWnd, SW_SHOW);
+            SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, 0x1 | 0x2);
         }
     }
 
@@ -157,21 +139,25 @@ public class Renderer : IDisposable
         _gl = _window.CreateOpenGL();
         _input = _window.CreateInput();
         _imGuiController = new ImGuiController(_gl, _window, _input);
+        MouseController.Initialize();
         MakeOverlay();
-        if (_input.Mice.Count > 0)
-        {
-            Mouse = _input.Mice[0];
-            // Mouse.MouseDown += OnMouse TODO MOUSE HANDLELING
-        }
     }
 
     private void OnRender(double deltaTime)
     {
         _imGuiController.Update((float)deltaTime);
 
+        if (_input.Keyboards[0].IsKeyPressed(Key.Home))
+        {
+            _isOverlayOpened = !_isOverlayOpened;
+            Thread.Sleep(100);
+        }
+
         _gl.ClearColor(0f, 0f, 0f, 0f);
         _gl.Clear(ClearBufferMask.ColorBufferBit);
-        DrawUI();
+
+        if (_isOverlayOpened)
+            DrawUI();
         _imGuiController.Render();
     }
 
@@ -188,6 +174,7 @@ public class Renderer : IDisposable
         {
             if (disposing)
             {
+                MouseController.ShutDown();
                 _imGuiController?.Dispose();
                 _gl?.Dispose();
                 _input?.Dispose();

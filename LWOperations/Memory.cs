@@ -1,3 +1,4 @@
+using System.Data.SqlTypes;
 using System.Numerics;
 using System.Runtime.InteropServices;
 
@@ -118,7 +119,7 @@ public static class Memory
             if (bytesRead < buffer.Length)
                 return null;
         }
-        catch (System.Exception)
+        catch
         {
             return null;
         }
@@ -151,5 +152,47 @@ public static class Memory
         return IntPtr.Size == 4
             ? new nint(BitConverter.ToInt32(buffer, 0))
             : new nint(BitConverter.ToInt64(buffer, 0));
+    }
+
+    public static bool WriteBytes(nint address, int value)
+    {
+        byte[] buffer = BitConverter.GetBytes(value);
+
+        if (
+            !WriteProcessMemory(
+                ProcessManager.Handle,
+                address,
+                buffer,
+                buffer.Length,
+                out int BytesWritten
+            )
+        )
+            return false;
+
+        return buffer.Length == BytesWritten;
+    }
+
+    public static bool WriteVec2(nint address, Vector2 value)
+    {
+        byte[] bufferX = BitConverter.GetBytes(value.X);
+        byte[] bufferY = BitConverter.GetBytes(value.Y);
+
+        var buffer = new byte[8];
+
+        Buffer.BlockCopy(bufferX, 0, buffer, 0, 4);
+        Buffer.BlockCopy(bufferY, 0, buffer, 4, 4);
+
+        if (
+            !WriteProcessMemory(
+                ProcessManager.Handle,
+                address,
+                buffer,
+                buffer.Length,
+                out int BytesWritten
+            )
+        )
+            return false;
+
+        return buffer.Length == BytesWritten;
     }
 }

@@ -2,8 +2,8 @@ using System.ComponentModel;
 using System.Data;
 using System.Numerics;
 using System.Runtime.InteropServices;
-using CS16Cheat.Graphic;
 using CS16Cheat.LWOperations;
+using CS16Cheat.Overlay;
 using CS16Cheat.utils;
 
 namespace CS16Cheat.core;
@@ -12,64 +12,61 @@ public record EntityListEntry(int Offset, Modules Module);
 
 internal static class GameData
 {
-    internal static Entity LocalPlayer { get; private set; }
     internal static Entity[] Entities { get; private set; }
-    private const int MaxPlayers = 64;
-    private static nint EntityListAddress;
-    private static EntityListEntry _entityListData = null!;
+    private static EntityListEntry EntityListData { get; set; } = null!;
+    internal static Entity LocalPlayer;
+    private const int _maxPlayers = 64;
+    private static nint _entityListAddress;
 
     static GameData()
     {
         LocalPlayer = new Entity();
-        Entities = new Entity[MaxPlayers];
-        for (int i = 0; i < MaxPlayers; i++)
-            Entities[i] = new Entity();
+        Entities = new Entity[_maxPlayers];
 
         IntializeUnchangedData();
     }
 
     private static void IntializeUnchangedData()
     {
-        _entityListData = Offsets.EntityList.TryGetValue(Info.CurrentVersion, out var value)
+        EntityListData = Offsets.EntityList.TryGetValue(Info.CurrentVersion, out var value)
             ? value
             : throw new VersionNotFoundException();
 
-        var entityListAddress =
+        _entityListAddress =
             Memory.ReadPointer(
-                ModuleManager.GetBaseAddress(_entityListData.Module) + _entityListData.Offset
+                ModuleManager.GetBaseAddress(EntityListData.Module) + EntityListData.Offset
             )
             ?? throw new Win32Exception(
                 $"Couldn't read entity list pointer. Make sure you start the game | ERROR_CODE: {Marshal.GetLastWin32Error()}"
             );
-
-        EntityListAddress = entityListAddress;
     }
 
     internal static void UpdateGameData()
     {
-        Renderer.HasError = false;
-        Renderer._hasWarn = false;
-
-        if (!FillEntityFields(LocalPlayer, Offsets.localPlayer, true))
+        if (!FillEntityFields(ref LocalPlayer, Offsets.localPlayer, true))
         {
             return;
         }
 
-        for (int i = 0; i < MaxPlayers; i++)
+        for (int i = 0; i < _maxPlayers; i++)
         {
             var entityAddrOffset = Offsets.step * (i + 1) + Offsets.localPlayer;
-            if (!FillEntityFields(Entities[i], entityAddrOffset, false))
+            if (!FillEntityFields(ref Entities[i], entityAddrOffset, false))
+            {
                 break;
+            }
         }
+        Renderer.HasError = false;
+        Renderer.HasWarn = false;
     }
 
     private static bool FillEntityFields(
-        Entity entity,
+        ref Entity entity,
         int offsetToInitialAddress,
         bool isLocalPlayer
     )
     {
-        var baseAddr = Memory.ReadPointer(EntityListAddress + offsetToInitialAddress);
+        var baseAddr = Memory.ReadPointer(_entityListAddress + offsetToInitialAddress);
         if (baseAddr == null)
         {
             if (isLocalPlayer)
@@ -85,7 +82,6 @@ internal static class GameData
         var objectDataAddress = Memory.ReadPointer(baseAddr.Value + Offsets.objectData);
         if (objectDataAddress == null)
         {
-            SetError("Couldn't read entity data pointer address.");
             return false;
         }
 
@@ -115,6 +111,7 @@ internal static class GameData
         entity.Health = health.Value;
         entity.Team = team.Value;
         entity.Position = position.Value;
+
         return true;
     }
 
@@ -126,7 +123,7 @@ internal static class GameData
 
     private static void SetWarning(string warnMessage)
     {
-        Renderer._hasWarn = true;
+        Renderer.HasWarn = true;
         Renderer.LastWarnMessage = $"WARNING: {warnMessage}.";
     }
 }

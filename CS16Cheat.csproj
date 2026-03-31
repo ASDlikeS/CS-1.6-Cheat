@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <AnalysisMode>All</AnalysisMode>
-    <NoWarn>CA1031;CA1303;CA1304;CA1305;CA1311</NoWarn>
+    <NoWarn>CA1031;CA1303;CA1304;CA1305;CA1311;CA1810</NoWarn>
     <RuntimeIdentifier>win-x86</RuntimeIdentifier>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
