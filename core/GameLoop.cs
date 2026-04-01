@@ -30,11 +30,14 @@ static class GameLoop
                 if (Aimbot.IsEnabled)
                 {
                     Aimbot.Run();
+                    Thread.Sleep(10);
                 }
             }
             catch (Exception ex)
             {
+                Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine($"GameLoop error: {ex.Message}");
+                Environment.Exit(1);
             }
         }
     }

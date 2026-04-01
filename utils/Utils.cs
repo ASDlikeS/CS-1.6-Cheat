@@ -1,3 +1,4 @@
+using System.Text.Json;
 using CS16Cheat.LWOperations;
 
 namespace CS16Cheat.utils;
@@ -31,5 +32,22 @@ internal static class Utils
             Console.ReadKey();
             Environment.Exit(0);
         }
+    }
+
+    public static readonly JsonSerializerOptions s_writeOptions = new() { WriteIndented = true };
+
+    public static readonly JsonSerializerOptions s_readOptions = new()
+    {
+        AllowTrailingCommas = true,
+    };
+
+    public static string Serialize<T>(T value)
+    {
+        return JsonSerializer.Serialize(value, s_writeOptions);
+    }
+
+    public static T? Deserialize<T>(string json)
+    {
+        return JsonSerializer.Deserialize<T>(json, s_readOptions);
     }
 }

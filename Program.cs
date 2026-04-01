@@ -11,6 +11,7 @@ static class Program
     {
         try
         {
+            Config.Initialize();
             ProcessManager.Initialize();
             Utils.SetupCancelHandler();
             ModuleManager.Initialize();

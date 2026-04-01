@@ -66,7 +66,7 @@ public class Renderer : IDisposable
     internal static bool HasWarn { get; set; }
     internal static string? LastErrorMessage { get; set; }
     internal static string? LastWarnMessage { get; set; }
-    private static bool _isOverlayOpened;
+    private static bool _isOverlayOpened = true;
 
     public Renderer()
     {
@@ -123,6 +123,7 @@ public class Renderer : IDisposable
         if (_window.Native != null && _window.Native.Win32.HasValue)
         {
             nint hWnd = _window.Native.Win32.Value.Hwnd;
+            ShowWindow(hWnd, 0x0);
 
             int exStyle = GetWindowLong(hWnd, GWL_EXSTYLE);
 
@@ -130,7 +131,8 @@ public class Renderer : IDisposable
             _ = SetWindowLong(hWnd, GWL_EXSTYLE, newStyle);
 
             SetLayeredWindowAttributes(hWnd, 0x000000, 255, LWA_COLORKEY);
-            SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, 0x1 | 0x2);
+            SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+            ShowWindow(hWnd, 0x5);
         }
     }
 
