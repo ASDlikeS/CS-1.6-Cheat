@@ -17,7 +17,7 @@ static class ProcessManager
         PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_VM_OPERATION | PROCESS_QUERY_INFORMATION;
 
     internal static nint Handle { get; private set; }
-    internal static nint ProcessWindowHandle { get; private set; }
+    internal static nint ProcessHwnd { get; private set; }
     internal static Process? GameProcess { get; private set; }
     internal static int ProcessId => GameProcess?.Id ?? 0;
 
@@ -41,7 +41,7 @@ static class ProcessManager
 
         if (GameProcess != null)
         {
-            Console.WriteLine(
+            Utils.WriteSuccessMessage(
                 $"[+] Found existing game: {GameProcess.ProcessName}.exe (PID: {GameProcess.Id})"
             );
         }
@@ -50,17 +50,17 @@ static class ProcessManager
             Console.WriteLine("[*] Starting game...");
             if (!LaunchGame())
             {
-                Console.WriteLine("WARNING: Couldn't start game process automatically.");
-                Console.WriteLine("Please start the game manually and press any key when ready...");
+                Utils.WriteWarningMessage("[!] Couldn't start game process automatically.");
+                Console.WriteLine(
+                    "Waiting starting game manually.\nPress any key if game launched..."
+                );
                 Console.ReadKey();
 
                 GameProcess = FindExistingProcess();
 
                 if (GameProcess == null)
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("[X] Game process not found. Exiting...");
-                    Console.ResetColor();
+                    Utils.WriteErrorMessage("[X] Game process not found. Exiting...");
                     Console.ReadKey();
                     Console.WriteLine("Press any key to exit...");
                     Environment.Exit(1);
@@ -68,9 +68,9 @@ static class ProcessManager
             }
         }
 
-        ProcessWindowHandle = GetWindowHandle(GameProcess!);
+        ProcessHwnd = GetWindowHandle(GameProcess!);
         Handle = OpenGameProcess(GameProcess!.Id);
-        Console.WriteLine("[+] Process manager initialized successfully");
+        Utils.WriteSuccessMessage("[+] Process manager initialized successfully");
     }
 
     private static Process? FindExistingProcess()
@@ -93,37 +93,41 @@ static class ProcessManager
             process.Refresh();
             if (process.MainWindowHandle != IntPtr.Zero)
             {
-                Console.WriteLine($"[+] Window handle: 0x{process.MainWindowHandle:X}");
+                Utils.WriteSuccessMessage($"[+] Window handle: 0x{process.MainWindowHandle:X}");
                 return process.MainWindowHandle;
             }
             Thread.Sleep(100);
         }
 
-        Console.ForegroundColor = ConsoleColor.Yellow;
-        Console.WriteLine("[!] Warning: Could not get window handle. ESP overlay may not work.");
-        Console.ResetColor();
-        return IntPtr.Zero;
+        throw new DllNotFoundException(
+            "[X] Couldn't get window handle for overlay... | Try restart the game"
+        );
     }
 
     private static bool LaunchGame()
     {
-        string gamePath = Config.ConfigData.GamePath;
+        string? gamePath = Config.ConfigData?.GamePath;
 
-        if (string.IsNullOrEmpty(gamePath) || !File.Exists(gamePath))
+        if (gamePath == null)
         {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine($"[X] Game not found at: {gamePath}");
-            Console.ResetColor();
-            return false;
+            Utils.WriteErrorMessage($"[X] Game not found.\nYou have to start the game manually...");
+            Console.ReadKey();
+            Environment.Exit(1);
         }
 
-        string gameDirectory = Path.GetDirectoryName(gamePath) ?? string.Empty;
+        string? gameDirectory = Path.GetDirectoryName(gamePath);
+
+        if (string.IsNullOrEmpty(gameDirectory))
+        {
+            Utils.WriteErrorMessage("[X] Incorrect game path");
+            Config.ChangeGamePath();
+        }
 
         ProcessStartInfo startInfo = new()
         {
             FileName = gamePath,
             WorkingDirectory = gameDirectory,
-            Arguments = "-windowed -noborder",
+            Arguments = "-windowed -noforcemparms -noforcemaccel -stretchaspect",
             UseShellExecute = false,
         };
 
@@ -159,19 +163,16 @@ static class ProcessManager
         if (handle == IntPtr.Zero)
         {
             int error = Marshal.GetLastWin32Error();
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine($"[X] Failed to open process. Error: {error}");
+            Utils.WriteErrorMessage($"[X] Failed to open process. Error: {error}");
 
             if (error == 5)
             {
-                Console.WriteLine("[!] Try running the cheat as Administrator.");
+                Utils.WriteWarningMessage("[!] Try running the cheat as Administrator.");
             }
-
-            Console.ResetColor();
             Environment.Exit(1);
         }
 
-        Console.WriteLine($"[+] Process handle: 0x{handle:X}");
+        Utils.WriteSuccessMessage($"[+] Process handle: 0x{handle:X}");
         return handle;
     }
 

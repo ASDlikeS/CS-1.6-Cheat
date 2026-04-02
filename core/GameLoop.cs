@@ -1,4 +1,5 @@
 using CS16Cheat.LWOperations;
+using CS16Cheat.utils;
 
 namespace CS16Cheat.core;
 
@@ -30,13 +31,14 @@ static class GameLoop
                 if (Aimbot.IsEnabled)
                 {
                     Aimbot.Run();
-                    Thread.Sleep(10);
                 }
+                Thread.Sleep(10);
             }
             catch (Exception ex)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"GameLoop error: {ex.Message}");
+                Utils.WriteErrorMessage($"[X] CORE ERROR: {ex.Message}");
+                Console.WriteLine("Press any key to exit...");
+                Console.ReadKey();
                 Environment.Exit(1);
             }
         }

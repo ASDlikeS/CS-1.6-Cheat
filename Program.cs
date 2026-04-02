@@ -27,11 +27,9 @@ static class Program
         }
         catch (Exception ex)
         {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine($"HANDLED ERROR: {ex.Message}");
+            Utils.WriteErrorMessage($"HANDLED ERROR: {ex.Message}");
             Console.WriteLine(new string('=', Console.WindowWidth));
-            Console.WriteLine($"STACK TRACE: {ex.StackTrace}");
-            Console.ResetColor();
+            Utils.WriteErrorMessage($"STACK TRACE: {ex.StackTrace}");
             if (ProcessManager.Handle != IntPtr.Zero)
                 ProcessManager.CloseHandle(ProcessManager.Handle);
             Console.WriteLine("\nPress any key to exit...");

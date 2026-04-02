@@ -1,6 +1,6 @@
 using System.Numerics;
-using System.Runtime.InteropServices;
 using CS16Cheat.core;
+using CS16Cheat.LWOperations;
 using CS16Cheat.utils;
 using ImGuiNET;
 using Silk.NET.Input;
@@ -13,47 +13,6 @@ namespace CS16Cheat.Overlay;
 
 public class Renderer : IDisposable
 {
-    [DllImport("user32.dll")]
-    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    private static extern int SetWindowLong(nint hWnd, int nIndex, int dwNewLong);
-
-    [DllImport("user32.dll")]
-    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    private static extern int GetWindowLong(nint hWnd, int nIndex);
-
-    [DllImport("user32.dll")]
-    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    private static extern bool SetLayeredWindowAttributes(
-        nint hWnd,
-        uint crKey,
-        byte bAlpha,
-        uint dwFlags
-    );
-
-    [DllImport("user32.dll")]
-    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    private static extern bool SetWindowPos(
-        nint hWnd,
-        nint hWndInsertAfter,
-        int X,
-        int Y,
-        int cx,
-        int cy,
-        uint uFlags
-    );
-
-    [DllImport("user32.dll")]
-    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-    private static extern bool ShowWindow(nint hWnd, int nIndex);
-
-    private readonly nint HWND_TOPMOST = new(-1);
-    private const int GWL_EXSTYLE = -20; // Sets a new extended window style.
-    private const int WS_EX_LAYERED = 0x80000; // FLAG: window supports alpha-channel(opacity)
-    private const int WS_EX_TOPMOST = 0x8;
-    private const uint LWA_COLORKEY = 0x1; // MODE: opacity by color
-    private const uint SWP_NOMOVE = 0x2;
-    private const uint SWP_NOSIZE = 0x1;
-
 #pragma warning disable CA2213
     private readonly IWindow _window;
 #pragma warning restore CA2213
@@ -66,7 +25,6 @@ public class Renderer : IDisposable
     internal static bool HasWarn { get; set; }
     internal static string? LastErrorMessage { get; set; }
     internal static string? LastWarnMessage { get; set; }
-    private static bool _isOverlayOpened = true;
 
     public Renderer()
     {
@@ -83,6 +41,7 @@ public class Renderer : IDisposable
         _window.Load += OnLoad;
         _window.Render += OnRender;
         _window.Closing += OnClosing;
+        _window.Update += OnUpdating;
     }
 
     private static void DrawUI()
@@ -118,48 +77,26 @@ public class Renderer : IDisposable
         ImGui.End();
     }
 
-    private void MakeOverlay()
-    {
-        if (_window.Native != null && _window.Native.Win32.HasValue)
-        {
-            nint hWnd = _window.Native.Win32.Value.Hwnd;
-            ShowWindow(hWnd, 0x0);
-
-            int exStyle = GetWindowLong(hWnd, GWL_EXSTYLE);
-
-            int newStyle = exStyle | WS_EX_LAYERED | WS_EX_TOPMOST;
-            _ = SetWindowLong(hWnd, GWL_EXSTYLE, newStyle);
-
-            SetLayeredWindowAttributes(hWnd, 0x000000, 255, LWA_COLORKEY);
-            SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-            ShowWindow(hWnd, 0x5);
-        }
-    }
-
     private void OnLoad()
     {
         _gl = _window.CreateOpenGL();
         _input = _window.CreateInput();
         _imGuiController = new ImGuiController(_gl, _window, _input);
-        MouseController.Initialize();
-        MakeOverlay();
+        WindowFollowing.OnLoading(_window);
+        InputController.Initialize();
+    }
+
+    private void OnUpdating(double deltaTime)
+    {
+        WindowFollowing.FollowUpGameWnd(_window);
     }
 
     private void OnRender(double deltaTime)
     {
         _imGuiController.Update((float)deltaTime);
-
-        if (_input.Keyboards[0].IsKeyPressed(Key.Home))
-        {
-            _isOverlayOpened = !_isOverlayOpened;
-            Thread.Sleep(100);
-        }
-
         _gl.ClearColor(0f, 0f, 0f, 0f);
         _gl.Clear(ClearBufferMask.ColorBufferBit);
-
-        if (_isOverlayOpened)
-            DrawUI();
+        DrawUI();
         _imGuiController.Render();
     }
 
@@ -176,7 +113,7 @@ public class Renderer : IDisposable
         {
             if (disposing)
             {
-                MouseController.ShutDown();
+                InputController.ShutDown();
                 _imGuiController?.Dispose();
                 _gl?.Dispose();
                 _input?.Dispose();

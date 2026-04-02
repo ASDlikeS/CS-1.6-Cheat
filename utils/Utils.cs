@@ -12,12 +12,12 @@ internal static class Utils
         Console.CancelKeyPress += (sender, e) =>
         {
             e.Cancel = true;
-            Console.WriteLine("\n[!] Ctrl+C pressed. Exiting...");
+            Utils.WriteWarningMessage("\n[!] Ctrl+C pressed. Exiting...");
 
             if (ProcessManager.Handle != IntPtr.Zero)
             {
                 ProcessManager.CloseHandle(ProcessManager.Handle);
-                Console.WriteLine("[+] Process handle closed.");
+                WriteSuccessMessage("[+] Process handle closed successfully!");
             }
             Environment.Exit(0);
         };
@@ -34,8 +34,28 @@ internal static class Utils
         }
     }
 
-    public static readonly JsonSerializerOptions s_writeOptions = new() { WriteIndented = true };
+    public static void WriteSuccessMessage(string message)
+    {
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine(message);
+        Console.ResetColor();
+    }
 
+    public static void WriteErrorMessage(string message)
+    {
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine(message);
+        Console.ResetColor();
+    }
+
+    public static void WriteWarningMessage(string message)
+    {
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine(message);
+        Console.ResetColor();
+    }
+
+    public static readonly JsonSerializerOptions s_writeOptions = new() { WriteIndented = true };
     public static readonly JsonSerializerOptions s_readOptions = new()
     {
         AllowTrailingCommas = true,

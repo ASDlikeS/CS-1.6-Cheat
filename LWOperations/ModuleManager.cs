@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Globalization;
+using CS16Cheat.utils;
 
 namespace CS16Cheat.LWOperations;
 
@@ -37,12 +38,9 @@ internal static class ModuleManager
 
         if (!isSuccess)
         {
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("[!] Initialization end with errors...");
-            Console.Write(
-                "You're sure you want to continue? Some features may NOT work, this will affect the gaming experience [y/N]: "
+            Utils.WriteWarningMessage(
+                "[!] Initialization end with errors...\nAre you sure you want to continue? Some features may doesn't work, this will affect the gaming experience [y/N]: "
             );
-            Console.ResetColor();
             string answer = Console.ReadLine()?.ToLower(CultureInfo.CurrentCulture) ?? "";
             if (answer != "y")
             {
@@ -68,9 +66,7 @@ internal static class ModuleManager
             }
         }
 
-        Console.ForegroundColor = ConsoleColor.Yellow;
-        Console.WriteLine($"[-] Module {moduleName} not found, some features may not work");
-        Console.ResetColor();
+        Utils.WriteErrorMessage($"[X] Module {moduleName} not found, some features may not work");
         return IntPtr.Zero;
     }
 }

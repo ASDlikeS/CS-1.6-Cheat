@@ -79,7 +79,7 @@ internal static class GameData
         }
         entity.Address = baseAddr.Value;
 
-        var objectDataAddress = Memory.ReadPointer(baseAddr.Value + Offsets.objectData);
+        var objectDataAddress = Memory.ReadPointer(baseAddr.Value + Offsets.objectData); // TODO: Solve problem with fast starting game can't read local player base address
         if (objectDataAddress == null)
         {
             return false;
