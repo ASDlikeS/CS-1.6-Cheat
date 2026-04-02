@@ -1,6 +1,5 @@
 using System.Numerics;
 using CS16Cheat.core;
-using CS16Cheat.LWOperations;
 using CS16Cheat.utils;
 using ImGuiNET;
 using Silk.NET.Input;
@@ -30,11 +29,11 @@ public class Renderer : IDisposable
     {
         var options = WindowOptions.Default;
 
-        options.Size = new Vector2D<int>(1920, 1080);
         options.WindowBorder = WindowBorder.Hidden;
-        options.TransparentFramebuffer = false;
+        options.TransparentFramebuffer = true;
         options.VSync = false;
         options.FramesPerSecond = 0;
+        options.TopMost = true;
 
         _window = Window.Create(options);
 
@@ -42,11 +41,19 @@ public class Renderer : IDisposable
         _window.Render += OnRender;
         _window.Closing += OnClosing;
         _window.Update += OnUpdating;
+        _window.FramebufferResize += OnFramebufferResize;
     }
 
     private static void DrawUI()
     {
-        ImGui.Begin($"CS 1.6 ({Info.CurrentVersion}) 2026 Cheat");
+        var displaySize = ImGui.GetIO().DisplaySize;
+
+        ImGui.SetNextWindowPos(new Vector2(10, 10), ImGuiCond.Always, new Vector2(0, 0));
+
+        ImGui.Begin(
+            $"CS 1.6 ({Info.CurrentVersion}) 2026 Cheat",
+            ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize
+        );
 
         if (HasError)
         {
@@ -89,6 +96,7 @@ public class Renderer : IDisposable
     private void OnUpdating(double deltaTime)
     {
         WindowFollowing.FollowUpGameWnd(_window);
+        WindowFollowing.UpdateTransparentWindow();
     }
 
     private void OnRender(double deltaTime)
@@ -98,6 +106,11 @@ public class Renderer : IDisposable
         _gl.Clear(ClearBufferMask.ColorBufferBit);
         DrawUI();
         _imGuiController.Render();
+    }
+
+    private void OnFramebufferResize(Vector2D<int> size)
+    {
+        _gl.Viewport(0, 0, (uint)size.X, (uint)size.Y);
     }
 
     private void OnClosing()

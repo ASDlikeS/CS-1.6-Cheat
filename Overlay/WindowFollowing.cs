@@ -1,5 +1,6 @@
 using System.Runtime.InteropServices;
 using CS16Cheat.LWOperations;
+using ImGuiNET;
 using Silk.NET.Maths;
 using Silk.NET.Windowing;
 using static CS16Cheat.Overlay.DLLImports;
@@ -9,48 +10,49 @@ namespace CS16Cheat.Overlay;
 public static class WindowFollowing
 {
     static RECT _rect;
-    static RECT _chacheRect;
-    static bool _chacheIsVisible;
+    static RECT _chachedRect;
+    static int _cachedExStyle; // ← Добавить кеш стиля
+    static bool _isTransparentMode;
     public static nint WindowHnd { get; set; }
 
     public static void FollowUpGameWnd(IWindow window)
     {
-        if (
-            IsIconic(ProcessManager.ProcessHwnd)
-            || GetForegroundWindow() != ProcessManager.ProcessHwnd
-        )
-        {
-            if (_chacheIsVisible)
-            {
-                ShowWindow(WindowHnd, SW_HIDE);
-                _chacheIsVisible = false;
-                return;
-            }
-        }
+        var windowS = GetWindowRect(ProcessManager.ProcessHwnd, out _rect);
 
-        if (!GetWindowRect(ProcessManager.ProcessHwnd, out _rect))
+        if (_chachedRect != _rect)
         {
-            Console.WriteLine("cant get window rectangle");
+            int width = _rect.Right - _rect.Left;
+            int height = _rect.Bottom - _rect.Top;
+            ArgumentNullException.ThrowIfNull(window);
+            window.Position = new Vector2D<int>(_rect.Left, _rect.Top);
+            window.Size = new Vector2D<int>(width, height);
+            _chachedRect = _rect;
+        }
+    }
+
+    public static void UpdateTransparentWindow()
+    {
+        bool shouldBeTransparent = !ImGui.IsWindowHovered(ImGuiHoveredFlags.AnyWindow);
+
+        if (shouldBeTransparent == _isTransparentMode)
             return;
-        }
 
-        int width = _rect.Right - _rect.Left;
-        int height = _rect.Bottom - _rect.Top;
+        int exStyle = GetWindowLong(WindowHnd, GWL_EXSTYLE);
 
-        if (width <= 0 || height <= 0)
+        if (shouldBeTransparent)
         {
-            return;
+            exStyle |= WS_EX_LAYERED | WS_EX_TRANSPARENT;
+            Console.WriteLine("SET TRANSPARENT!");
+        }
+        else
+        {
+            Console.WriteLine("SET CLICKABLE!");
+            exStyle &= ~WS_EX_LAYERED & ~WS_EX_TRANSPARENT;
         }
 
-        if (_chacheRect != _rect)
-        {
-            // SetWindowPos(WindowHnd, HWND_TOPMOST, _rect.Left, _rect.Top, width, height, 0x2000);
-            if (window == null)
-                return;
-            window.Position = new Vector2D<int>(width, height);
-            _chacheRect = _rect;
-        }
-        _chacheIsVisible = true;
+        _ = SetWindowLong(WindowHnd, GWL_EXSTYLE, exStyle);
+
+        _isTransparentMode = shouldBeTransparent;
     }
 
     public static void OnLoading(IWindow window)
@@ -60,8 +62,9 @@ public static class WindowFollowing
         ArgumentNullException.ThrowIfNull(window.Native.Win32);
         WindowHnd = window.Native.Win32.Value.Hwnd;
         int exStyle = GetWindowLong(WindowHnd, GWL_EXSTYLE);
-        _ = SetWindowLong(WindowHnd, GWL_EXSTYLE, exStyle | WS_EX_LAYERED | WS_EX_TRANSPARENT);
-        ShowWindow(WindowHnd, SW_HIDE);
+        exStyle |= WS_EX_LAYERED | WS_EX_TRANSPARENT | 0x80;
+        _ = SetWindowLong(WindowHnd, GWL_EXSTYLE, exStyle);
+        _isTransparentMode = true;
     }
 }
 
