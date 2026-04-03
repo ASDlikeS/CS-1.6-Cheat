@@ -12,8 +12,11 @@ static class InputController
     static bool IsXButton1Pressed => (GetAsyncKeyState(VK_XBUTTON1) & 0x8000) != 0;
     static bool IsHomePressed => (GetAsyncKeyState(VK_HOME) & 0x8000) != 0;
 
+    static bool _homePrev;
     static Thread? _pollThread;
     static volatile bool _running;
+
+    public static volatile bool IsOverlayOpen;
 
     public static void Initialize()
     {
@@ -27,6 +30,14 @@ static class InputController
         while (_running)
         {
             Aimbot.IsAimingOn = IsXButton1Pressed;
+
+            bool homeCurrent = IsHomePressed;
+
+            if (homeCurrent && !_homePrev)
+                IsOverlayOpen = !IsOverlayOpen;
+
+            _homePrev = homeCurrent;
+
             Thread.Sleep(1);
         }
     }

@@ -46,8 +46,6 @@ public class Renderer : IDisposable
 
     private static void DrawUI()
     {
-        var displaySize = ImGui.GetIO().DisplaySize;
-
         ImGui.SetNextWindowPos(new Vector2(10, 10), ImGuiCond.Always, new Vector2(0, 0));
 
         ImGui.Begin(

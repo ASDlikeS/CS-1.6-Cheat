@@ -10,23 +10,41 @@ namespace CS16Cheat.Overlay;
 public static class WindowFollowing
 {
     static RECT _rect;
-    static RECT _chachedRect;
-    static int _cachedExStyle; // ← Добавить кеш стиля
+    static RECT _cachedRect;
     static bool _isTransparentMode;
+
     public static nint WindowHnd { get; set; }
 
     public static void FollowUpGameWnd(IWindow window)
     {
-        var windowS = GetWindowRect(ProcessManager.ProcessHwnd, out _rect);
+        ArgumentNullException.ThrowIfNull(window);
 
-        if (_chachedRect != _rect)
+        bool minimized = IsIconic(ProcessManager.ProcessHwnd);
+        nint foreground = GetForegroundWindow();
+        bool gameActive =
+            !minimized && (foreground == ProcessManager.ProcessHwnd || foreground == WindowHnd);
+
+        bool shouldShow = gameActive && InputController.IsOverlayOpen;
+
+        if (window.IsVisible != shouldShow)
+            window.IsVisible = shouldShow;
+
+        if (!shouldShow)
+            return;
+
+        if (!GetWindowRect(ProcessManager.ProcessHwnd, out _rect))
+            return;
+
+        int width = _rect.Right - _rect.Left;
+        int height = _rect.Bottom - _rect.Top;
+        if (width <= 0 || height <= 0)
+            return;
+
+        if (_cachedRect != _rect)
         {
-            int width = _rect.Right - _rect.Left;
-            int height = _rect.Bottom - _rect.Top;
-            ArgumentNullException.ThrowIfNull(window);
             window.Position = new Vector2D<int>(_rect.Left, _rect.Top);
             window.Size = new Vector2D<int>(width, height);
-            _chachedRect = _rect;
+            _cachedRect = _rect;
         }
     }
 
@@ -42,16 +60,13 @@ public static class WindowFollowing
         if (shouldBeTransparent)
         {
             exStyle |= WS_EX_LAYERED | WS_EX_TRANSPARENT;
-            Console.WriteLine("SET TRANSPARENT!");
         }
         else
         {
-            Console.WriteLine("SET CLICKABLE!");
             exStyle &= ~WS_EX_LAYERED & ~WS_EX_TRANSPARENT;
         }
 
         _ = SetWindowLong(WindowHnd, GWL_EXSTYLE, exStyle);
-
         _isTransparentMode = shouldBeTransparent;
     }
 
@@ -60,11 +75,16 @@ public static class WindowFollowing
         ArgumentNullException.ThrowIfNull(window);
         ArgumentNullException.ThrowIfNull(window.Native);
         ArgumentNullException.ThrowIfNull(window.Native.Win32);
+
         WindowHnd = window.Native.Win32.Value.Hwnd;
+
         int exStyle = GetWindowLong(WindowHnd, GWL_EXSTYLE);
-        exStyle |= WS_EX_LAYERED | WS_EX_TRANSPARENT | 0x80;
+        exStyle |= WS_EX_LAYERED | WS_EX_TRANSPARENT;
         _ = SetWindowLong(WindowHnd, GWL_EXSTYLE, exStyle);
+
         _isTransparentMode = true;
+
+        window.IsVisible = false;
     }
 }
 
@@ -79,31 +99,14 @@ public struct RECT(int left, int top, int right, int bottom) : IEquatable<RECT>
     public readonly int Width => Right - Left;
     public readonly int Height => Bottom - Top;
 
-    public override readonly bool Equals(object? obj)
-    {
-        return obj is RECT other && Equals(other);
-    }
+    public override readonly bool Equals(object? obj) => obj is RECT other && Equals(other);
 
-    public readonly bool Equals(RECT other)
-    {
-        return Left == other.Left
-            && Top == other.Top
-            && Right == other.Right
-            && Bottom == other.Bottom;
-    }
+    public readonly bool Equals(RECT other) =>
+        Left == other.Left && Top == other.Top && Right == other.Right && Bottom == other.Bottom;
 
-    public override readonly int GetHashCode()
-    {
-        return HashCode.Combine(Left, Top, Right, Bottom);
-    }
+    public override readonly int GetHashCode() => HashCode.Combine(Left, Top, Right, Bottom);
 
-    public static bool operator ==(RECT left, RECT right)
-    {
-        return left.Equals(right);
-    }
+    public static bool operator ==(RECT left, RECT right) => left.Equals(right);
 
-    public static bool operator !=(RECT left, RECT right)
-    {
-        return !(left == right);
-    }
+    public static bool operator !=(RECT left, RECT right) => !(left == right);
 }
