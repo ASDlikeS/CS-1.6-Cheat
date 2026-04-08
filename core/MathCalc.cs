@@ -1,4 +1,5 @@
 using System.Numerics;
+using CS16Cheat.Overlay;
 
 namespace CS16Cheat.core;
 
@@ -13,19 +14,35 @@ static class MathCalc
         float yaw = MathF.Atan2(delta.Y, delta.X) * (180f / MathF.PI);
         float pitch = -(MathF.Atan2(delta.Z, horizontalDistance) * (180f / MathF.PI));
 
-        // CS 1.6 диапазон: yaw -180..180, pitch -89..89
-        yaw = NormalizeAngle(yaw);
-        pitch = Math.Clamp(pitch, -89f, 89f);
-
         return new Vector2(pitch, yaw);
     }
 
-    private static float NormalizeAngle(float angle)
+    internal static bool W2S(float[] matrix, Vector3 worldPos, out Vector2 screenPos)
     {
-        while (angle > 180f)
-            angle -= 360f;
-        while (angle < -180f)
-            angle += 360f;
-        return angle;
+        screenPos = new Vector2(0, 0);
+
+        float clipX =
+            worldPos.X * matrix[0] + worldPos.Y * matrix[4] + worldPos.Z * matrix[8] + matrix[12];
+        float clipY =
+            worldPos.X * matrix[1] + worldPos.Y * matrix[5] + worldPos.Z * matrix[9] + matrix[13];
+        float clipZ =
+            worldPos.X * matrix[2] + worldPos.Y * matrix[6] + worldPos.Z * matrix[10] + matrix[14];
+        float clipW =
+            worldPos.X * matrix[3] + worldPos.Y * matrix[7] + worldPos.Z * matrix[11] + matrix[15];
+
+        if (clipW < 0.1f)
+            return false;
+
+        float ndcX = clipX / clipW;
+        float ndcY = clipY / clipW;
+
+        float screenWidth = WindowFollowing.WindowWidth;
+        float screenHeight = WindowFollowing.WindowHeight;
+
+        float screenX = (screenWidth / 2f * ndcX) + (ndcX + screenWidth / 2f);
+        float screenY = -(screenHeight / 2f * ndcY) + (ndcY + screenHeight / 2f);
+
+        screenPos = new Vector2(screenX, screenY);
+        return true;
     }
 }

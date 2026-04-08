@@ -12,7 +12,7 @@ internal static class Utils
         Console.CancelKeyPress += (sender, e) =>
         {
             e.Cancel = true;
-            Utils.WriteWarningMessage("\n[!] Ctrl+C pressed. Exiting...");
+            WriteWarningMessage("\n[!] Ctrl+C pressed. Exiting...");
 
             if (ProcessManager.Handle != IntPtr.Zero)
             {

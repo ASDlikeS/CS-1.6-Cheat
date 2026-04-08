@@ -5,7 +5,7 @@ namespace CS16Cheat.core;
 
 static class Aimbot
 {
-    internal static bool IsEnabled;
+    internal static bool isEnabled;
     internal static bool IsAimingOn { get; set; }
 
     internal static void Run()
@@ -39,20 +39,11 @@ static class Aimbot
             ref var target = ref GameData.Entities[closestEntIndex];
             var newAngle = MathCalc.CalculateAngles(GameData.LocalPlayer.Position, target.Position);
 
-            if (float.IsNaN(newAngle.X) || float.IsNaN(newAngle.Y))
-            {
-                Renderer.HasError = true;
-                Renderer.LastErrorMessage = "Aimbot: Invalid angles calculated";
-                return;
-            }
-
             nint viewAnglesAddress = ModuleManager.GetBaseAddress(Modules.hw) + Offsets.viewAngles;
 
             if (!Memory.WriteVec2(viewAnglesAddress, newAngle))
             {
-                Renderer.HasError = true;
-                Renderer.LastErrorMessage =
-                    "Couldn't handle with writing memory in process for aimbot processing...";
+                Renderer.SetError("Couldn't handle with writing memory in process for aimbot...");
             }
         }
     }

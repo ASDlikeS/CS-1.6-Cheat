@@ -56,8 +56,6 @@ internal static class GameData
                 break;
             }
         }
-        Renderer.HasError = false;
-        Renderer.HasWarn = false;
     }
 
     private static bool FillEntityFields(
@@ -71,15 +69,15 @@ internal static class GameData
         {
             if (isLocalPlayer)
             {
-                SetError("Couldn't read local player base address.");
+                Renderer.SetError("Couldn't read local player base address.");
                 return false;
             }
-            SetWarning("Couldn't read entity base address.");
+            Renderer.SetWarning("Couldn't read entity base address.");
             return false;
         }
         entity.Address = baseAddr.Value;
 
-        var objectDataAddress = Memory.ReadPointer(baseAddr.Value + Offsets.objectData); // TODO: Solve problem with fast starting game can't read local player base address
+        var objectDataAddress = Memory.ReadPointer(baseAddr.Value + Offsets.objectData);
         if (objectDataAddress == null)
         {
             return false;
@@ -91,17 +89,17 @@ internal static class GameData
 
         if (team == null)
         {
-            SetWarning("Couldn't read team address");
+            Renderer.SetWarning("Couldn't read team address");
             return false;
         }
         if (health == null)
         {
-            SetWarning("Couldn't read health address");
+            Renderer.SetWarning("Couldn't read health address");
             return false;
         }
         if (position == null)
         {
-            SetWarning("Couldn't read position address");
+            Renderer.SetWarning("Couldn't read position address");
             return false;
         }
 
@@ -113,17 +111,5 @@ internal static class GameData
         entity.Position = position.Value;
 
         return true;
-    }
-
-    private static void SetError(string errMessage)
-    {
-        Renderer.HasError = true;
-        Renderer.LastErrorMessage = $"ERROR: {errMessage} | Win32: {Marshal.GetLastWin32Error()}";
-    }
-
-    private static void SetWarning(string warnMessage)
-    {
-        Renderer.HasWarn = true;
-        Renderer.LastWarnMessage = $"WARNING: {warnMessage}.";
     }
 }

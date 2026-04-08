@@ -1,4 +1,3 @@
-using System.Data.SqlTypes;
 using System.Numerics;
 using System.Runtime.InteropServices;
 
@@ -73,6 +72,30 @@ public static class Memory
             BitConverter.ToSingle(buffer, 4),
             BitConverter.ToSingle(buffer, 8)
         );
+    }
+
+    public static float[]? ReadMatrix(nint address, int length)
+    {
+        if (length <= 0)
+            return null;
+
+        var array = new float[length];
+        var buffer = new byte[length * 4];
+        if (
+            !ReadProcessMemory(
+                ProcessManager.Handle,
+                address,
+                buffer,
+                buffer.Length,
+                out int bytesRead
+            )
+        )
+            return null;
+        if (bytesRead < buffer.Length)
+            return null;
+
+        Buffer.BlockCopy(buffer, 0, array, 0, bytesRead);
+        return array;
     }
 
     public static int? ReadInt32(nint address)

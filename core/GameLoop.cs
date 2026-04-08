@@ -6,7 +6,11 @@ namespace CS16Cheat.core;
 static class GameLoop
 {
     private static bool _running = true;
-    private static Thread _gameThread = new(Run) { IsBackground = true, Name = "GameLoopThread" };
+    private static readonly Thread _gameThread = new(Run)
+    {
+        IsBackground = true,
+        Name = "GameLoopThread",
+    };
 
     public static void Start()
     {
@@ -28,7 +32,7 @@ static class GameLoop
             try
             {
                 GameData.UpdateGameData();
-                if (Aimbot.IsEnabled)
+                if (Aimbot.isEnabled)
                 {
                     Aimbot.Run();
                 }

@@ -14,6 +14,8 @@ public static class WindowFollowing
     static bool _isTransparentMode;
 
     public static nint WindowHnd { get; set; }
+    public static int WindowHeight { get; private set; }
+    public static int WindowWidth { get; private set; }
 
     public static void FollowUpGameWnd(IWindow window)
     {
@@ -35,15 +37,15 @@ public static class WindowFollowing
         if (!GetWindowRect(ProcessManager.ProcessHwnd, out _rect))
             return;
 
-        int width = _rect.Right - _rect.Left;
-        int height = _rect.Bottom - _rect.Top;
-        if (width <= 0 || height <= 0)
+        WindowWidth = _rect.Right - _rect.Left;
+        WindowHeight = _rect.Bottom - _rect.Top;
+        if (WindowWidth <= 0 || WindowHeight <= 0)
             return;
 
         if (_cachedRect != _rect)
         {
             window.Position = new Vector2D<int>(_rect.Left, _rect.Top);
-            window.Size = new Vector2D<int>(width, height);
+            window.Size = new Vector2D<int>(WindowWidth, WindowHeight);
             _cachedRect = _rect;
         }
     }

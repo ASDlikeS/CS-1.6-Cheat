@@ -13,17 +13,20 @@ namespace CS16Cheat.Overlay;
 public class Renderer : IDisposable
 {
 #pragma warning disable CA2213
-    private readonly IWindow _window;
+    readonly IWindow _window;
 #pragma warning restore CA2213
-    private IInputContext _input = null!;
-    private GL _gl = null!;
-    private ImGuiController _imGuiController = null!;
-    private bool _disposed;
+    IInputContext _input = null!;
+    GL _gl = null!;
+    ImGuiController _imGuiController = null!;
+    bool _disposed;
+    static bool _hasError;
+    static bool _hasWarn;
+    static double _warnDuration;
+    static double _errorDuration;
+    const double _WarnAndErrDelay = 2.0;
 
-    internal static bool HasError { get; set; }
-    internal static bool HasWarn { get; set; }
-    internal static string? LastErrorMessage { get; set; }
-    internal static string? LastWarnMessage { get; set; }
+    internal static string? _lastErrorMessage;
+    internal static string? _lastWarnMessage;
 
     public Renderer()
     {
@@ -44,30 +47,27 @@ public class Renderer : IDisposable
         _window.FramebufferResize += OnFramebufferResize;
     }
 
-    private static void DrawUI()
+    static void DrawUI()
     {
         ImGui.SetNextWindowPos(new Vector2(10, 10), ImGuiCond.Always, new Vector2(0, 0));
 
-        ImGui.Begin(
-            $"CS 1.6 ({Info.CurrentVersion}) 2026 Cheat",
-            ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize
-        );
+        ImGui.Begin($"CS 1.6 ({Info.CurrentVersion}) 2026 Cheat", ImGuiWindowFlags.NoMove);
 
-        if (HasError)
+        if (_hasError)
         {
-            ImGui.TextColored(new Vector4(1, 0, 0, 1), LastErrorMessage);
+            ImGui.TextColored(new Vector4(1, 0, 0, 1), $"ERROR: {_lastErrorMessage}");
         }
         else
         {
             ImGui.TextColored(new Vector4(0, 1, 0, 1), "Execute correct.");
         }
-        if (HasWarn)
+        if (_hasWarn)
         {
-            ImGui.TextColored(new Vector4(1, 1, 0, 1), LastWarnMessage);
+            ImGui.TextColored(new Vector4(1, 1, 0, 1), $"WARNING: {_lastWarnMessage}");
         }
 
-        ImGui.Checkbox("Aimbot", ref Aimbot.IsEnabled);
-        if (Aimbot.IsEnabled)
+        ImGui.Checkbox("Aimbot", ref Aimbot.isEnabled);
+        if (Aimbot.isEnabled)
         {
             if (Aimbot.IsAimingOn)
             {
@@ -79,10 +79,12 @@ public class Renderer : IDisposable
             }
         }
 
+        ImGui.Checkbox("ESP", ref ESP.isEnabled);
+
         ImGui.End();
     }
 
-    private void OnLoad()
+    void OnLoad()
     {
         _gl = _window.CreateOpenGL();
         _input = _window.CreateInput();
@@ -91,27 +93,60 @@ public class Renderer : IDisposable
         InputController.Initialize();
     }
 
-    private void OnUpdating(double deltaTime)
+    void OnUpdating(double deltaTime)
     {
         WindowFollowing.FollowUpGameWnd(_window);
         WindowFollowing.UpdateTransparentWindow();
+        if (_hasError)
+        {
+            _errorDuration += deltaTime;
+
+            if (_errorDuration > _WarnAndErrDelay)
+            {
+                _hasError = false;
+                _errorDuration = 0;
+            }
+        }
+        if (_hasWarn)
+        {
+            _warnDuration += deltaTime;
+
+            if (_warnDuration > _WarnAndErrDelay)
+            {
+                _hasWarn = false;
+                _warnDuration = 0;
+            }
+        }
     }
 
-    private void OnRender(double deltaTime)
+    void OnRender(double deltaTime)
     {
         _imGuiController.Update((float)deltaTime);
         _gl.ClearColor(0f, 0f, 0f, 0f);
         _gl.Clear(ClearBufferMask.ColorBufferBit);
+        ESP.Draw();
         DrawUI();
         _imGuiController.Render();
     }
 
-    private void OnFramebufferResize(Vector2D<int> size)
+    public static void SetError(string errorMessage)
+    {
+        _hasError = true;
+        _lastErrorMessage = errorMessage;
+    }
+
+    public static void SetWarning(string warningMessage)
+    {
+        _hasWarn = true;
+        _lastWarnMessage = warningMessage;
+    }
+
+    void OnFramebufferResize(Vector2D<int> size)
     {
         _gl.Viewport(0, 0, (uint)size.X, (uint)size.Y);
     }
 
-    private void OnClosing()
+    void OnClosing()
     {
         Dispose(true);
     }

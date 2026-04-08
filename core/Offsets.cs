@@ -5,7 +5,10 @@ namespace CS16Cheat.core;
 
 public static class Offsets
 {
-    // Module: hw.dll
+    //Module: client
+    public const int viewMatrix = 0xEC9780;
+
+    // Module: hw
     public const int viewAngles = 0x108AEC4;
     public static readonly Dictionary<ClientVersion, EntityListEntry> EntityList = new()
     {
