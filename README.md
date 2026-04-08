@@ -43,8 +43,7 @@ External ESP + Aimbot for Counter-Strike 1.6 (Build 8684 | Others will be implem
 
 | Key | Action |
 |-----|--------|
-| INSERT | Toggle menu |
-| Home | Toggle Overlay |
+| Home | Toggle Menu| 
 | Side mouse button | Active Aimbot |
 
 ## Build Requirements
